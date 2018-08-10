@@ -98,7 +98,7 @@ public class InvoiceDelegateTest {
 				soapConnector
 						.marshalSendAndReceive(
 								serviceURL,
-								Matchers.any(NumberToWords.class))).thenReturn(
+								numberToWords)).thenReturn(
 				(Object)numberToWordsResponse);
 		InvoiceResponse invoiceResponse = invoiceService.generateInvoice(invoiceRequest);
 		Assert.assertNotNull(invoiceResponse);
