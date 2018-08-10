@@ -3,6 +3,11 @@ package com.invoice.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+/**
+ * Used in case amount is given as string.
+ * @author mohansar0
+ *
+ */
 @ResponseStatus(HttpStatus.NOT_FOUND)
 public class InvoiceBadRequestException extends RuntimeException{
 

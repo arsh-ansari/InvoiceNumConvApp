@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.dataaccess.webservicesserver.NumberToWords;
 import com.dataaccess.webservicesserver.NumberToWordsResponse;
@@ -33,9 +34,6 @@ public class InvoiceDelegate {
 	private String serviceURL;
 
 	@Autowired
-	private InvoiceResponse invoiceResponse;
-
-	@Autowired
 	private SoapConnector soapConnector;
 
 	@Autowired
@@ -52,7 +50,9 @@ public class InvoiceDelegate {
 	public InvoiceResponse generateInvoice(InvoiceRequest invoiceRequest) {
 
 		List<ItemDetails> lstItemDetails = invoiceRequest.getItemDetails();
-		for (ItemDetails item : lstItemDetails) {
+		
+		if (!CollectionUtils.isEmpty(lstItemDetails)) {
+			for (ItemDetails item : lstItemDetails) {
 
 			// Handling a not number scenario
 			try {
@@ -62,32 +62,31 @@ public class InvoiceDelegate {
 				throw new InvoiceBadRequestException(e);
 			}
 
-			// Number cannot be less than zero for amount
-			if (Float.parseFloat(item.getItemAmount()) < 0) {
-				item.setError(true);
-				item.setItemAmountinWords("Bad Number :" + item.getItemAmount());
-			} else {
-				// prepare the request for web-service
-				NumberToWords numberToWords = invoDataTranslator
-						.mapInputDomainRequestToWSRequest(item);
-				if (null != numberToWords) {
-					item.setItemAmount(item.getItemAmount());
-				}
+				// Number cannot be less than zero for amount
+				if (Float.parseFloat(item.getItemAmount()) < 0) {
+					item.setError(true);
+					item.setItemAmountinWords("Bad Number :"
+							+ item.getItemAmount());
+				} else {
+					// prepare the request for web-service
+					NumberToWords numberToWords = invoDataTranslator
+							.mapInputDomainRequestToWSRequest(item);
 
-				// web service invocation via the soap connector
-				NumberToWordsResponse numberToWordsResponse = ((NumberToWordsResponse) soapConnector
-						.marshalSendAndReceive(serviceURL, numberToWords));
-				
-				if (null != numberToWordsResponse) {
-					// Map the web-service response
-					invoDataTranslator.mapWSResponseToDomainResponse(
-							numberToWordsResponse, item);
+					// web service invocation via the soap connector
+					NumberToWordsResponse numberToWordsResponse = ((NumberToWordsResponse) soapConnector
+							.marshalSendAndReceive(serviceURL, numberToWords));
+
+					if (null != numberToWordsResponse) {
+						// Map the web-service response
+						invoDataTranslator.mapWSResponseToDomainResponse(
+								numberToWordsResponse, item);
+					}
+
 				}
-				
-				
 			}
 		}
 
+		InvoiceResponse invoiceResponse = new InvoiceResponse();
 		invoiceResponse.setLstItemDetails(lstItemDetails);
 
 		return invoiceResponse;

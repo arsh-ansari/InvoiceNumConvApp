@@ -4,6 +4,11 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * Invoice Request object having item details.
+ * @author mohansar0
+ *
+ */
 @Component
 public class InvoiceRequest {
 
